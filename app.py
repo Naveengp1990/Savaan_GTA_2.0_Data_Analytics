@@ -2,6 +2,31 @@
 import streamlit as st
 import pickle
 import pandas as pd
+import numpy as np
+from sklearn.base import BaseEstimator, TransformerMixin
+
+# ====================================================================
+# CRITICAL FIX: Define the custom transformer here.
+# Pickle requires the class definition to exist in the script that 
+# loads the model.
+# ====================================================================
+class AddTotalAdsTransformer(BaseEstimator, TransformerMixin):
+    """Adds a 'total_ads_expenses' feature by summing the 3 input ad columns."""
+    def fit(self, X, y=None):
+        return self
+    
+    def transform(self, X):
+        if isinstance(X, pd.DataFrame):
+            X_arr = X.values
+        else:
+            X_arr = np.array(X)
+            
+        # Sum across columns (axis=1) and reshape to a column vector
+        total_ads = np.sum(X_arr, axis=1).reshape(-1, 1)
+        
+        # Concatenate original 3 features with the new 'total_ads' feature
+        return np.hstack([X_arr, total_ads])
+# ====================================================================
 
 # Page Configuration
 st.set_page_config(page_title="Ad Sales Predictor | IIT M Saavan", page_icon="📊", layout="centered")
